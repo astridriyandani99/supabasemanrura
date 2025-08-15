@@ -105,13 +105,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (typeof error === 'object' && error !== null && 'message' in error) {
             const supabaseError = error as { message: string, details?: string };
-            errorMessage = `Gagal mengambil profil pengguna: ${supabaseError.message}.`;
             
             // Check for specific RLS error patterns
             if (supabaseError.message?.includes('infinite recursion')) {
-                errorMessage = `Gagal mengambil profil pengguna: terdeteksi rekursi tak terbatas (infinite recursion) pada kebijakan keamanan untuk tabel "profiles". Ini adalah kesalahan konfigurasi database.`;
-            } else if (supabaseError.details?.includes('violates row-level security policy') || supabaseError.message.includes('violates row-level security policy')) {
-                errorMessage += " Ini kemungkinan besar disebabkan oleh masalah izin akses data (Row Level Security). Harap hubungi administrator sistem.";
+                errorMessage = `KESALAHAN KONFIGURASI DATABASE TERDETEKSI
+
+Masalah: Terdeteksi "infinite recursion" pada kebijakan keamanan (RLS) untuk tabel "profiles". Ini BUKAN error pada kode aplikasi, melainkan kesalahan pengaturan di database Supabase Anda.
+
+Solusi:
+1. Buka proyek Supabase Anda.
+2. Navigasi ke SQL Editor.
+3. Salin dan jalankan seluruh query di bawah ini untuk memperbaiki kebijakan keamanan Anda:
+
+-- Menonaktifkan RLS sementara
+ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
+
+-- Menghapus kebijakan lama yang mungkin salah
+DROP POLICY IF EXISTS "Users can view their own profile." ON public.profiles;
+DROP POLICY IF EXISTS "Users can update their own profile." ON public.profiles;
+DROP POLICY IF EXISTS "Enable read access for authenticated users" ON public.profiles;
+
+-- Membuat kebijakan SELECT yang BENAR
+CREATE POLICY "Users can view their own profile."
+ON public.profiles FOR SELECT
+USING (auth.uid() = id);
+
+-- Membuat kebijakan UPDATE yang BENAR
+CREATE POLICY "Users can update their own profile."
+ON public.profiles FOR UPDATE
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+-- Mengaktifkan kembali RLS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;`;
+            } else {
+                 errorMessage = `Gagal mengambil profil pengguna: ${supabaseError.message}.`;
+                 if (supabaseError.details?.includes('violates row-level security policy') || supabaseError.message.includes('violates row-level security policy')) {
+                    errorMessage += " Ini kemungkinan besar disebabkan oleh masalah izin akses data (Row Level Security). Harap hubungi administrator sistem.";
+                 }
             }
         }
         

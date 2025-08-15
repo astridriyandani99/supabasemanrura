@@ -66,7 +66,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
           </div>
           
           {error && (
-            <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-200 rounded-md" role="alert">
+            <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-200 rounded-md whitespace-pre-wrap" role="alert">
                 {error}
             </div>
           )}
