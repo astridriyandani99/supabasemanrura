@@ -1,3 +1,7 @@
+import type { Json as SupabaseJson } from './services/supabaseClient';
+
+export type Json = SupabaseJson;
+
 export interface PoinPenilaian {
   id: string;
   text: string;
@@ -34,7 +38,7 @@ export interface Assessment {
   poin_id: string;
   ward_staff_score: number | null;
   ward_staff_notes: string | null;
-  ward_staff_evidence: Evidence | null; // Tipe JSONB di Supabase
+  ward_staff_evidence: Json | null; // Tipe JSONB di Supabase
   assessor_score: number | null;
   assessor_notes: string | null;
   assessor_id: string | null; // UUID dari auth.users

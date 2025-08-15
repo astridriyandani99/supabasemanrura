@@ -110,7 +110,7 @@ const AuthenticatedApp: React.FC<AuthenticatedAppProps> = ({
             ...(role === 'assessor' && { assessor_id: currentUser.id })
         };
         
-        const { error } = await supabase.from('assessments').upsert(payload, { onConflict: 'ward_id, poin_id' });
+        const { error } = await supabase.from('assessments').upsert([payload], { onConflict: 'ward_id, poin_id' });
         if (error) throw error;
         
         setSaveStatus('success');
@@ -175,7 +175,7 @@ const AuthenticatedApp: React.FC<AuthenticatedAppProps> = ({
     try {
       const { data: newPeriod, error } = await supabase
         .from('assessment_periods')
-        .insert(period)
+        .insert([period])
         .select()
         .single();
       if (error) throw error;
@@ -192,7 +192,7 @@ const AuthenticatedApp: React.FC<AuthenticatedAppProps> = ({
     setSaveStatus('saving');
     try {
         const newWardData = { id: wardName.toLowerCase().replace(/\s+/g, '-'), name: wardName };
-        const { data: newWard, error } = await supabase.from('wards').insert(newWardData).select().single();
+        const { data: newWard, error } = await supabase.from('wards').insert([newWardData]).select().single();
         if (error) throw error;
         setWards(prev => [...prev, newWard]);
         setSaveStatus('success');

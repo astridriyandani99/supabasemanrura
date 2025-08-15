@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { PoinPenilaian, Profile, Evidence, Assessment } from '../types';
+import type { PoinPenilaian, Profile, Evidence, Assessment, Json } from '../types';
 import { ArrowUpTrayIcon, PaperClipIcon, TrashIcon, PencilIcon, UserCircleIcon, CheckBadgeIcon } from './Icons';
 import { supabase } from '../services/supabaseClient';
 
@@ -88,7 +88,7 @@ interface AssessmentEditorProps {
     poinId: string;
     score: number | null | undefined;
     notes: string | null | undefined;
-    evidence: Evidence | null | undefined;
+    evidence: Json | null | undefined;
     onUpdate: (updates: Partial<Assessment>) => void;
     onCancel?: () => void;
     showFileUpload: boolean;
@@ -116,7 +116,7 @@ const AssessmentEditor: React.FC<AssessmentEditorProps> = ({
                 const { data: urlData } = supabase.storage.from('evidence-files').getPublicUrl(filePath);
 
                 const newEvidence: Evidence = { name: file.name, url: urlData.publicUrl, type: file.type };
-                onUpdate({ ward_staff_evidence: newEvidence });
+                onUpdate({ ward_staff_evidence: newEvidence as unknown as Json });
             } catch (error) {
                 setUploadError("File upload failed. Please try again.");
                 console.error(error);
@@ -167,7 +167,7 @@ const AssessmentEditor: React.FC<AssessmentEditorProps> = ({
                         rows={2}
                     />
                 </div>
-                <EvidenceViewer evidence={evidence} onRemove={showFileUpload ? handleRemoveFile : undefined} />
+                <EvidenceViewer evidence={evidence as unknown as Evidence | null} onRemove={showFileUpload ? handleRemoveFile : undefined} />
                 {showFileUpload && (
                     <div>
                         <label htmlFor={`file-upload-${poinId}`} className={`inline-flex items-center px-3 py-1.5 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors ${isUploading || disabled ? 'cursor-not-allowed bg-slate-200' : 'cursor-pointer'}`}>
@@ -249,7 +249,7 @@ const AssessmentPoin: React.FC<AssessmentPoinProps> = ({ poin, currentUser, asse
             ) : (
                  <div className="mt-3 space-y-4">
                     {disabledStateMessage}
-                    <ResultPanel title="Penilaian Anda" icon={<UserCircleIcon className="w-5 h-5 mr-2 text-slate-500"/>} score={assessment?.ward_staff_score} notes={assessment?.ward_staff_notes} evidence={assessment?.ward_staff_evidence}/>
+                    <ResultPanel title="Penilaian Anda" icon={<UserCircleIcon className="w-5 h-5 mr-2 text-slate-500"/>} score={assessment?.ward_staff_score} notes={assessment?.ward_staff_notes} evidence={assessment?.ward_staff_evidence as unknown as Evidence | null}/>
                     {assessment?.assessor_score !== undefined && <ResultPanel title="Validasi & Catatan Asesor" icon={<CheckBadgeIcon className="w-5 h-5 mr-2 text-indigo-500"/>} score={assessment?.assessor_score} notes={assessment?.assessor_notes} evidence={null} assessorName={assessor?.name}/>}
                  </div>
             )}
@@ -260,7 +260,7 @@ const AssessmentPoin: React.FC<AssessmentPoinProps> = ({ poin, currentUser, asse
       return (
         <div className="p-4 bg-white rounded-lg border border-indigo-200 shadow-sm space-y-4">
            {basePoinInfo}
-           <ResultPanel title="Penilaian Staf" icon={<UserCircleIcon className="w-5 h-5 mr-2 text-slate-500"/>} score={assessment?.ward_staff_score} notes={assessment?.ward_staff_notes} evidence={assessment?.ward_staff_evidence}/>
+           <ResultPanel title="Penilaian Staf" icon={<UserCircleIcon className="w-5 h-5 mr-2 text-slate-500"/>} score={assessment?.ward_staff_score} notes={assessment?.ward_staff_notes} evidence={assessment?.ward_staff_evidence as unknown as Evidence | null}/>
            <div className="p-4 bg-indigo-50/50 rounded-lg border border-indigo-200">
                 <div className="flex justify-between items-center mb-3">
                      <h4 className="font-semibold text-indigo-800 text-sm flex items-center">
@@ -308,7 +308,7 @@ const AssessmentPoin: React.FC<AssessmentPoinProps> = ({ poin, currentUser, asse
       return (
          <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-sm space-y-4">
            {basePoinInfo}
-           <ResultPanel title="Penilaian Staf" icon={<UserCircleIcon className="w-5 h-5 mr-2 text-slate-500"/>} score={assessment?.ward_staff_score} notes={assessment?.ward_staff_notes} evidence={assessment?.ward_staff_evidence}/>
+           <ResultPanel title="Penilaian Staf" icon={<UserCircleIcon className="w-5 h-5 mr-2 text-slate-500"/>} score={assessment?.ward_staff_score} notes={assessment?.ward_staff_notes} evidence={assessment?.ward_staff_evidence as unknown as Evidence | null}/>
            <ResultPanel title="Validasi Asesor" icon={<CheckBadgeIcon className="w-5 h-5 mr-2 text-indigo-500"/>} score={assessment?.assessor_score} notes={assessment?.assessor_notes} evidence={null} assessorName={assessor?.name}/>
         </div>
       );

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import LoginScreen from './components/LoginScreen';
 import AuthenticatedApp from './components/AuthenticatedApp';
-import { supabase } from './services/supabaseClient';
+import { supabase, supabaseConfigError } from './services/supabaseClient';
 import type { Profile, Ward, AllAssessments, Assessment, AssessmentPeriod } from './types';
 import PublicLandingPage from './components/PublicLandingPage';
 
@@ -26,15 +26,20 @@ const App: React.FC = () => {
   const [allAssessments, setAllAssessments] = useState<AllAssessments>({});
   const [assessmentPeriods, setAssessmentPeriods] = useState<AssessmentPeriod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(supabaseConfigError);
   const [view, setView] = useState<'landing' | 'login'>('landing');
 
   useEffect(() => {
+    if (supabaseConfigError) {
+        setIsLoading(false);
+        return;
+    }
+
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const [
             { data: wardsData, error: wardsError },
             { data: profilesData, error: profilesError },
@@ -58,7 +63,7 @@ const App: React.FC = () => {
         setAllAssessments(transformAssessments(assessmentsData || []));
 
       } catch (err) {
-        const errorMessage = (err instanceof Error) ? `Failed to load data: ${err.message}` : 'An unknown error occurred while connecting to the database.';
+        const errorMessage = (err instanceof Error) ? err.message : 'An unknown error occurred while connecting to the database.';
         setError(errorMessage);
         console.error(err);
       } finally {
@@ -66,7 +71,7 @@ const App: React.FC = () => {
       }
     };
 
-    // --- FIX: Only fetch data IF a user is logged in ---
+    // --- Only fetch data IF a user is logged in ---
     if (currentUser) {
       fetchData();
     } else {
@@ -93,8 +98,8 @@ const App: React.FC = () => {
      return (
       <div className="flex items-center justify-center min-h-screen bg-red-50 p-4">
         <div className="w-full max-w-lg p-8 bg-white rounded-xl shadow-lg border border-red-200">
-          <h1 className="text-2xl font-bold text-red-700">Database Connection Error</h1>
-          <p className="mt-4 text-slate-700">The application could not connect to the Supabase backend. Please check your internet connection and the Supabase project status.</p>
+          <h1 className="text-2xl font-bold text-red-700">Error Konfigurasi Aplikasi</h1>
+          <p className="mt-4 text-slate-700">Aplikasi tidak dapat berjalan karena terjadi kesalahan. Silakan periksa detail di bawah ini.</p>
           <p className="mt-4 text-slate-700 whitespace-pre-wrap bg-red-100 p-4 rounded-md border border-red-200 font-mono text-sm">{error}</p>
         </div>
       </div>
